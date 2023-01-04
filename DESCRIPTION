@@ -1,0 +1,28 @@
+Package: GeneTrajectory
+Title: Gene Trajectory Inference
+Version: 0.0.0.1
+Authors@R: 
+    person(given = "Rihao",
+           family = "Qu",
+           role = c("aut", "cre"),
+           email = "rihao.qu@yale.edu",
+           comment = c(ORCID = "YOUR-ORCID-ID"))
+Description: Gene trajectory inference.
+License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
+    license
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.1
+Depends: 
+    R (>= 4.0)
+Imports:
+  Seurat (>= 4.0),
+  SeuratObject,
+	rARPACK,
+	FNN,
+	igraph,
+	biclust,
+	stats,
+	Matrix (>= 1.5)
+	
