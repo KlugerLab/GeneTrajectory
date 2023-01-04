@@ -14,44 +14,36 @@ ExtractGeneTrajectory <- function(gene.embedding,
   nBranch <- N
   genes <- rownames(gene.embedding)
   diffusion.mat <- get.RW.matrix(dist.mat, K = K)
-  
+
   for (i in 1:nBranch){
     if (length(which(summary.df$selected == "Other")) == 0) stop("Wrong!")
-    
+
     if (length(which(summary.df$selected != "Other")) != 0) dist.to.origin[which(summary.df$selected != "Other")] <- -Inf
-    
+
     message(genes[which.max(dist.to.origin)])
-    
+
     seed <- rep(0, nrow(gene.embedding))
     seed[which.max(dist.to.origin)] <- 1
-    
+
     seed.diffused <- seed
     max.T <- t.list[i]
     for (ii in 1:max.T){
       seed.diffused <- diffusion.mat %*% matrix(seed.diffused, ncol = 1)
     }
-    
+
     cutoff <- max(seed.diffused) * quantile
-    
+
     summary.df$selected[which(seed.diffused > cutoff & summary.df$selected == "Other")]  <- paste0("Trajectory-", i)
     summary.df$seed.diffused <- -log(seed.diffused)
-    
-    if (FALSE){
-      print(table(summary.df$selected))
-      print(
-        ggplot(summary.df, aes(x = DM.2, y = DM.3, color = selected)) + geom.point() + ggtitle("Sequential trajectory identification") 
-        print(
-          ggplot(summary.df, aes(x = DM.2, y = DM.3, color = seed.diffused)) + geom.point() + scale.color.viridis() + ggtitle("Sequential trajectory identification") 
-        )
-    }
-    
-    summary.df <- cbind(summary.df, 
-                       construct.pseudoorder(dist.mat, 
+
+
+    summary.df <- cbind(summary.df,
+                       construct.pseudoorder(dist.mat,
                                              which(summary.df$selected  == paste0("Trajectory-", i)),
                                              max.id = genes[which.max(dist.to.origin)]))
-    
+
     colnames(summary.df)[ncol(summary.df)] <- paste0("Pseudoorder", i)
   }
-  
+
   summary.df
 }
