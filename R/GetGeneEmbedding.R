@@ -1,4 +1,4 @@
-#' Run Diffusion Map on the gene-gene Wasserstein distance matrix
+#' Get the diffusion embedding of genes based on the gene-gene Wasserstein distance matrix
 #'
 #' @param dist.mat matrix; Gene-gene Wasserstein distance matrix (symmetric)
 #' @param K integer; Adaptive kernel bandwidth for each point set to be the distance to its `K`-th nearest neighbor.
@@ -6,29 +6,29 @@
 #' @param nEV integer; Number of leading eigenvectors to export
 #' @param t integer; Number of diffusion times
 #'
-#' @return 
+#' @return
 #' List with the following elements:
 #' \tabular{ll}{
 #'    \code{diffu.emb} \tab Diffusion Map embedding with the leading `K` eigenvectors \cr
 #'    \tab \cr
 #'    \code{eigen.vals} \tab Eigenvalues associated with corresponding eigenvectors \cr
 #' }
-#' 
-#' 
+#'
+#'
 #' @export
 #'
 #' @examples
-#' 
-#' 
+#'
+#'
 
-GetGeneEmbedding <- function(dist.mat, 
-                               K = 10, 
-                               sigma = NULL, 
+GetGeneEmbedding <- function(dist.mat,
+                               K = 10,
+                               sigma = NULL,
                                nEV = 30,
                                t = 1){
-  dm.res <- diffusion.map(dist.mat, 
-                          K = K, 
-                          sigma = sigma, 
+  dm.res <- diffusion.map(dist.mat,
+                          K = K,
+                          sigma = sigma,
                           nEV = nEV+1,
                           t = t)
   dm.res[["diffu.emb"]] <- dm.res[["diffu.emb"]][, 2:(nEV+1)]

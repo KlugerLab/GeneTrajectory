@@ -1,4 +1,4 @@
-#' Extract gene trajectories
+#' Order genes along a given trajectory
 #'
 #' @param dist.mat matrix; Gene-gene Wasserstein distance matrix (symmetric)
 #' @param subset vector; Genes in a given trajectory
