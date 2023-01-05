@@ -1,0 +1,2 @@
+/data/rihao/anaconda3/lib/python3.9/site-packages/ot/lp/__init__.py:554: UserWarning: numItermax reached before optimality. Try to increase numItermax.
+  check_result(result_code)
