@@ -1,14 +1,27 @@
-
+#' Convert a distance matrix into a random-walk matrix based on adaptive Gaussian kernel
+#'
+#' @param dist.mat matrix; Precomputed distance matrix (symmetric)
+#' @param K integer; Adaptive kernel bandwidth for each point set to be the distance to its `K`-th nearest neighbor.
+#'
+#'
+#' @return
+#' Random-walk matrix
+#'
+#'
+#' @export
+#'
+#' @examples
+#'
+#'
 
 get.RW.matrix <- function(dist.mat,
                           K = 10){
-  K <- 10
   dists <- as.matrix(dist.mat)
   sigma.list <- c()
   for (i in 1:nrow(dists)){
     sigma.list[i] <- sort(dists[i,])[K]
   }
-  
+
   affinity.matrix <- matrix(0, nrow=nrow(dists), ncol=ncol(dists))
   for (i in 1:nrow(affinity.matrix)){
     dist.vec <- dists[i, ]
