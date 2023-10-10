@@ -1,0 +1,186 @@
+---
+title: "GeneTrajectory example (Liver zonation & circadian effects)"
+author: "Rihao Qu"
+date: "9/20/2023"
+output: html_document
+---
+  
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#knitr::opts_chunk$set(fig.width=5, fig.height=4.5) 
+```
+
+### Preparation
+```{r, warning = FALSE, message=FALSE}
+
+##### Load required R libraries
+library(Seurat)
+require(scales)
+require(ggplot2)
+require(viridis)
+require(dplyr)
+require(GeneTrajectory)
+require(Matrix)
+require(plot3D)
+```
+
+
+### Loading example data
+
+```{r, warning = FALSE, fig.width=4.5, fig.height=4.5}
+##### Import the example SMC data and take a preliminary visualization
+data_S <- readRDS("/banach1/rq25/GeneTrajectory_data/data_S_liver_subset.rds")
+data_S$ZT <- "6h"
+data_S$ZT[which(data_S$orig.ident == "ZT00B")] <- "0h"
+data_S$ZT[which(data_S$orig.ident == "ZT12B")] <- "12h"
+data_S$ZT <- factor(data_S$ZT, levels = c("0h", "6h", "12h"))
+DimPlot(data_S, group.by = "ZT", shuffle = T)
+DimPlot(data_S, group.by = "layer", shuffle = T)
+```
+
+################################################
+### Gene-gene distance computation
+################################################
+##### Select genes
+```{r, warning = FALSE}
+assay <- "RNA"
+DefaultAssay(data_S) <- assay
+data_S <- FindVariableFeatures(data_S, nfeatures = 2000)
+all_genes <- data_S@assays[[assay]]@var.features
+assay <- "alra"
+expr_percent <- apply(as.matrix(data_S[[assay]]@data[all_genes, ]) > 0, 1, sum)/ncol(data_S)
+genes <- all_genes[which(expr_percent > 0.05 & expr_percent < 0.75)]
+length(genes)
+```
+
+##### Prepare the input for gene-gene Wasserstein distance computation
+```{r, warning = FALSE}
+cell.graph.dist <- GetGraphDistance(data_S, K = 10, dims = 1:2, reduction = "umap")
+cg_output <- CoarseGrain(data_S, cell.graph.dist, genes, N = 1000, dims = 1:2, reduction = "umap", assay = "RNA")
+
+#####Save the files for computation in Python
+dir.path <- "/banach1/rq25/tmp/liver_zonation_example/"
+dir.create(dir.path, recursive = T)
+setwd(dir.path)
+write.table(cg_output[["features"]], paste0(dir.path, "gene_names.csv"), row.names = F, col.names = F, sep = ",")
+write.table(cg_output[["graph.dist"]], paste0(dir.path, "ot_cost.csv"), row.names = F, col.names = F, sep = ",")
+Matrix::writeMM(Matrix(cg_output[["gene.expression"]], sparse = T), paste0(dir.path, "gene_expression.mtx"))
+```
+
+################################################
+##### Wasserstein distance computation in Python
+################################################
+```{r, warning = FALSE, fig.width=5, fig.height=4.5}
+# Make sure to install the latest version of POT module (python), using the following:
+# pip install -U https://github.com/PythonOT/POT/archive/master.zip
+# Run the following command to get the gene-gene Wasserstein distance matrix
+
+#system(sprintf("nohup /data/rihao/anaconda3/bin/python /data/rihao/GeneTrajectory/GeneTrajectory/python/gene_distance_cal_parallel.py %s &", dir.path))
+```
+
+################################################
+### Gene trajectory inference and visualization
+################################################
+```{r, warning = FALSE, fig.width=4.5, fig.height=4}
+dir.path <- "/banach1/rq25/UMAP_GD-k5-dim2_CG-N500-dim2/"
+gene.dist.mat <- LoadGeneDistMat(dir.path, file_name = "emd.csv")[genes, genes]
+dim(gene.dist.mat)
+
+gene_embedding <- GetGeneEmbedding(gene.dist.mat, K = 5)$diffu.emb
+
+gene_trajectory <- ExtractGeneTrajectory(gene_embedding, gene.dist.mat, N = 2, t.list = c(3,5), K = 5)
+table(gene_trajectory$selected)
+
+par(mar = c(1.5,1.5,1.5,1.5))
+scatter3D(gene_embedding[,1],
+          gene_embedding[,2],
+          gene_embedding[,3],
+          bty = "b2", colvar = as.integer(as.factor(gene_trajectory$selected))-1,
+          main = "trajectory", pch = 19, cex = 1, theta = 0, phi = 45,
+          col = ramp.col(c(hue_pal()(2))))
+scatter3D(gene_embedding[,1],
+          gene_embedding[,2],
+          gene_embedding[,4],
+          bty = "b2", colvar = as.integer(as.factor(gene_trajectory$selected))-1,
+          main = "trajectory", pch = 19, cex = 1, theta = 0, phi = 45,
+          col = ramp.col(c(hue_pal()(2))))
+scatter3D(gene_embedding[,2],
+          gene_embedding[,3],
+          gene_embedding[,4],
+          bty = "b2", colvar = as.integer(as.factor(gene_trajectory$selected))-1,
+          main = "trajectory", pch = 19, cex = 1, theta = 0, phi = 45,
+          col = ramp.col(c(hue_pal()(2))))
+
+gene_list <- list()
+for (i in 1:2){
+  #message(paste0("Trajectory-", i))
+  gene_trajectory_sub <- gene_trajectory[which(gene_trajectory$selected == paste0("Trajectory-", i)),]
+  genes <- rownames(gene_trajectory_sub)[order(gene_trajectory_sub[, paste0("Pseudoorder", i)])]
+  #message(paste(genes, collapse = ", "))
+  gene_list[[i]] <- genes
+}
+
+```
+
+
+### Visualize gene bin plots
+```{r, warning = FALSE, fig.width=12, fig.height=3}
+
+data_S <- AddGeneBinScore(data_S, gene_trajectory, N.bin = 5, trajectories = 1:2, assay = "alra", reverse = c(T, T))
+FeaturePlot(data_S, pt.size = 0.05, features = paste0("Trajectory",1,"_genes", 1:5), ncol = 5, order = T) &
+  scale_color_gradientn(colors = rev(brewer_pal(palette = "RdYlBu")(10))) & NoLegend() & NoAxes()
+FeaturePlot(data_S, pt.size = 0.05, features = paste0("Trajectory",2,"_genes", 1:5), ncol = 5, order = T) &
+  scale_color_gradientn(colors = rev(brewer_pal(palette = "RdYlBu")(10))) & NoLegend() & NoAxes()
+
+```
+
+### Examining the association between each gene trajectory and liver zonation / circadian effects
+```{r, warning = FALSE, fig.width=12, fig.height=3}
+layer_matrix <- matrix(0, nrow = 8, ncol = ncol(data_S))
+for (i in 1:8){
+  layer_matrix[i,which(data_S$layer == as.character(i))] <- 1
+}
+layer_matrix <- layer_matrix/apply(layer_matrix, 1, sum)
+rownames(layer_matrix) <- paste0("Layer", 1:8)
+
+df.plot <- data.frame(layer = rep(paste0("Layer", 1:8), 5),
+                      bin = rep(1:5, each = 8),
+                      score = 0)
+
+mdata <- data_S@meta.data[, paste0("Trajectory1_genes",1:5)]
+mdata_by_layer <- layer_matrix %*% as.matrix(mdata)
+df.plot$score <- as.vector(mdata_by_layer)
+ggplot(df.plot, aes(x = layer, y = score, fill = layer)) + facet_wrap(~bin, ncol = 5) + geom_bar(stat="identity") + ggtitle("Trajectory1 - zonation") & RotatedAxis()
+
+mdata <- data_S@meta.data[, paste0("Trajectory2_genes",1:5)]
+mdata_by_layer <- layer_matrix %*% as.matrix(mdata)
+df.plot$score <- as.vector(mdata_by_layer)
+ggplot(df.plot, aes(x = layer, y = score, fill = layer)) + facet_wrap(~bin, ncol = 5) + geom_bar(stat="identity") + ggtitle("Trajectory2 - zonation") & RotatedAxis()
+```
+
+```{r, warning = FALSE, fig.width=5, fig.height=2.5}
+circadian_matrix <- matrix(0, nrow = 3, ncol = ncol(data_S))
+for (i in 1:3){
+  circadian_matrix[i,which(data_S$ZT == c("0h","6h","12h")[i])] <- 1
+}
+circadian_matrix <- circadian_matrix/apply(circadian_matrix, 1, sum)
+rownames(circadian_matrix) <- c("0h","6h","12h")
+
+df.plot <- data.frame(ZT = rep(c("0h","6h","12h"), 5),
+                      bin = rep(1:5, each = 3),
+                      score = 0)
+df.plot$ZT <- factor(df.plot$ZT , levels = c("0h","6h","12h"))
+
+mdata <- data_S@meta.data[, paste0("Trajectory1_genes",1:5)]
+mdata_by_circadian <- circadian_matrix %*% as.matrix(mdata)
+df.plot$score <- as.vector(mdata_by_circadian)
+ggplot(df.plot, aes(x = ZT, y = score, fill = ZT)) + facet_wrap(~bin, ncol = 5) + geom_bar(stat="identity") + ggtitle("Trajectory1 - circadian") & RotatedAxis()
+
+mdata <- data_S@meta.data[, paste0("Trajectory2_genes",1:5)]
+mdata_by_circadian <- circadian_matrix %*% as.matrix(mdata)
+df.plot$score <- as.vector(mdata_by_circadian)
+#ggplot(df.plot, aes(x = bin, y = score, fill = ZT)) + geom_bar(stat="identity", position = "dodge") + ggtitle("Trajectory2 - circadian") & RotatedAxis()
+ggplot(df.plot, aes(x = ZT, y = score, fill = ZT)) + facet_wrap(~bin, ncol = 5) + geom_bar(stat="identity") + ggtitle("Trajectory2 - circadian") & RotatedAxis()
+
+```
+
