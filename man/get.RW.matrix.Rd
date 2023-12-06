@@ -17,7 +17,3 @@ Random-walk matrix
 \description{
 Convert a distance matrix into a random-walk matrix based on adaptive Gaussian kernel
 }
-\examples{
-
-
-}

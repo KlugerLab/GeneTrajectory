@@ -17,6 +17,3 @@ Gene-gene Wasserstein matrix
 \description{
 Load gene-gene Wasserstein matrix
 }
-\examples{
-
-}

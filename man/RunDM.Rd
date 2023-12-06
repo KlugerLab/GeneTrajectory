@@ -41,7 +41,3 @@ Returns a Seurat object containing a Diffusion Map representation
 \description{
 Run Diffusion Map on a Seurat object
 }
-\examples{
-
-
-}

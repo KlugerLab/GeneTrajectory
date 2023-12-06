@@ -28,7 +28,3 @@ List with the following elements:
 \description{
 Run Diffusion Map on a precomputed distance matrix
 }
-\examples{
-
-
-}

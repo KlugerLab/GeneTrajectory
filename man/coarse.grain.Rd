@@ -29,7 +29,3 @@ Returns a list
 \description{
 Base function called by CoarseGrain
 }
-\examples{
-
-
-}

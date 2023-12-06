@@ -35,7 +35,3 @@ A data frame indicating gene trajectories and gene ordering along each trajector
 \description{
 Extract gene trajectories
 }
-\examples{
-
-
-}

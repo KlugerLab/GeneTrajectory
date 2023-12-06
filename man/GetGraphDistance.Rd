@@ -21,7 +21,3 @@ Returns a cell-cell graph distance matrix
 \description{
 Run Diffusion Map on a Seurat object
 }
-\examples{
-
-
-}

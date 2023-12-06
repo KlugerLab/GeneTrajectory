@@ -39,7 +39,3 @@ Returns a list
 \description{
 Coarse-graining
 }
-\examples{
-
-
-}

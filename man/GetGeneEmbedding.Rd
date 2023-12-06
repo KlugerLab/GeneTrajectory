@@ -2,7 +2,7 @@
 % Please edit documentation in R/GetGeneEmbedding.R
 \name{GetGeneEmbedding}
 \alias{GetGeneEmbedding}
-\title{Run Diffusion Map on the gene-gene Wasserstein distance matrix}
+\title{Get the diffusion embedding of genes based on the gene-gene Wasserstein distance matrix}
 \usage{
 GetGeneEmbedding(dist.mat, K = 10, sigma = NULL, nEV = 30, t = 1)
 }
@@ -26,9 +26,5 @@ List with the following elements:
 }
 }
 \description{
-Run Diffusion Map on the gene-gene Wasserstein distance matrix
-}
-\examples{
-
-
+Get the diffusion embedding of genes based on the gene-gene Wasserstein distance matrix
 }

@@ -38,7 +38,3 @@ Seurat object with gene bin score added in the metadata
 \description{
 Add gene bin score
 }
-\examples{
-
-
-}

@@ -2,7 +2,7 @@
 % Please edit documentation in R/GetGenePseudoorder.R
 \name{GetGenePseudoorder}
 \alias{GetGenePseudoorder}
-\title{Extract gene trajectories}
+\title{Order genes along a given trajectory}
 \usage{
 GetGenePseudoorder(dist.mat, subset, max.id = NULL)
 }
@@ -17,9 +17,5 @@ GetGenePseudoorder(dist.mat, subset, max.id = NULL)
 Pseudoorder of genes along a given trajectory
 }
 \description{
-Extract gene trajectories
-}
-\examples{
-
-
+Order genes along a given trajectory
 }
