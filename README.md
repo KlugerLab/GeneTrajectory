@@ -11,5 +11,5 @@ ALRA can be installed as follows:
 
 ```r
 install.packages("devtools")
-devtools::install_github("KlugerLab/ALRA")
+devtools::install_github("RihaoQu/IGT")
 ```
