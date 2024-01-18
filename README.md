@@ -61,7 +61,7 @@ Matrix::writeMM(Matrix(cg_output[["gene.expression"]], sparse = T), paste0(dir.p
 
 #This can also be run in the terminal. Please make sure to install the latest version of POT module (python), using the following:
 #pip install -U https://github.com/PythonOT/POT/archive/master.zip
-system(sprintf("nohup /data/anaconda3/bin/python ./GeneTrajectory/python/gene_distance_cal_parallel.py %s &", dir.path)) #Python paths should be adjusted accordingly.
+system(sprintf("nohup /data/anaconda3/bin/python ./GeneTrajectory/python/gene_distance_cal_parallel_Iter50000.py %s &", dir.path)) #Python paths should be adjusted accordingly.
 ```
 
 When the computation is finished, a file named `emd.csv` is generated under the same directory. Gene trajectory extraction and visualization can be done using the following code.
