@@ -69,7 +69,7 @@ system(sprintf("nohup /data/anaconda3/bin/python ./GeneTrajectory/python/gene_di
 #nohup /data/anaconda3/bin/python ./GeneTrajectory/python/gene_distance_cal_parallel_Iter50000.py ./mouse_dermal/ &
 ```
 
-When the computation is finished, a file named `emd.csv` is generated under the same directory. Gene trajectory extraction and visualization can be done using the following code.
+When the computation is finished, a file named `emd.csv` is generated in the same directory. Gene trajectory identification and visualization can be done using the following code.
 
 ```r
 gene.dist.mat <- LoadGeneDistMat(dir.path, file_name = "emd.csv")
