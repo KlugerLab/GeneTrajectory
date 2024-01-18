@@ -13,3 +13,22 @@ GeneTrajectory can be installed as follows:
 install.packages("devtools")
 devtools::install_github("RihaoQu/IGT")
 ```
+## Example tutorial
+
+The standard preprocessing can be done by using the Seurat R package which includes: library normalization; finding variable features; scaling; PCA embedding; and UMAP embedding.
+
+```r
+require(GeneTrajectory)
+require(plot3D)
+require(ggplot2)
+require(viridis)
+require(scales)
+require(Seurat)
+require(SeuratWrappers)
+
+# Here, we load a preprocessed Seurat object for gene trajectory inference.
+data_S <- data_S_WLS_combined_E14.5
+DimPlot(data_S, reduction = "umap", label = T, label.size = 5, group.by = "cell_type") & NoAxes()
+DimPlot(data_S, group.by = "orig.ident") & NoAxes()
+```
+
