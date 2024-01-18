@@ -50,7 +50,7 @@ genes <- all_genes[which(expr_percent > 0.01 & expr_percent < 0.5)]
 length(genes)
 ```
 
-The intermediate outputs are written into a local directory which allows for gene-gene Wasserstein distance computation using Python OT package.
+The intermediate outputs are written into a local directory which allows for gene-gene Wasserstein distance computation using [Python OT package](https://pythonot.github.io/).
 ```r
 cg_output <- CoarseGrain(data_S, cell.graph.dist, genes, N = 1000, dims = 1:10)
 dir.path <- "./mouse_dermal/"
@@ -59,12 +59,40 @@ write.table(cg_output[["features"]], paste0(dir.path, "gene_names.csv"), row.nam
 write.table(cg_output[["graph.dist"]], paste0(dir.path, "ot_cost.csv"), row.names = F, col.names = F, sep = ",")
 Matrix::writeMM(Matrix(cg_output[["gene.expression"]], sparse = T), paste0(dir.path, "gene_expression.mtx"))
 
+#This can also be run in the terminal. Please make sure to install the latest version of POT module (python), using the following:
+#pip install -U https://github.com/PythonOT/POT/archive/master.zip
 system(sprintf("nohup /data/anaconda3/bin/python ./GeneTrajectory/python/gene_distance_cal_parallel.py %s &", dir.path))
-
 ```
 
+When the computation is finished, a file named `emd.csv` is generated under the same directory. Gene trajectory extraction and visualization can be done using the following code.
 
+```r
+gene.dist.mat <- LoadGeneDistMat(dir.path, file_name = "emd.csv")
+gene_embedding <- GetGeneEmbedding(gene.dist.mat, K = 5)$diffu.emb
+gene_trajectory <- ExtractGeneTrajectory(gene_embedding, gene.dist.mat, N = 3, t.list = c(9,16,5), K = 5)
 
+#Visualizing gene trajectories using the leading three non-trivial eigenvectors.
+par(mar = c(1.5,1.5,1.5,1.5))
+scatter3D(gene_embedding[,1],
+          gene_embedding[,2],
+          gene_embedding[,3],
+          bty = "b2", colvar = as.integer(as.factor(gene_trajectory$selected))-1,
+          main = "trajectory", pch = 19, cex = 1, theta = 45, phi = 0,
+          col = ramp.col(c(hue_pal()(3))))
+```
+
+Users can choose to visualize gene bin plots by overlaying. This facilitates understanding of how. Here, we would recommend users to apply [ALRA](https://github.com/KlugerLab/ALRA/blob/master/README.md) imputation to smooth the expression values.
+```r
+N.bin = 7
+data_S <- RunALRA(data_S)
+data_S <- AddGeneBinScore(data_S, gene_trajectory, N.bin = N.bin, trajectories = 1:3, assay = "alra")
+FeaturePlot(data_S, pt.size = 0.05, features = paste0("Trajectory",1,"_genes", 1:N.bin), ncol = N.bin, order = T) &
+  scale_color_gradientn(colors = rev(brewer_pal(palette = "RdYlBu")(10))) & NoLegend() & NoAxes()
+FeaturePlot(data_S, pt.size = 0.05, features = paste0("Trajectory",2,"_genes", 1:N.bin), ncol = N.bin, order = T) &
+  scale_color_gradientn(colors = rev(brewer_pal(palette = "RdYlBu")(10))) & NoLegend() & NoAxes()
+FeaturePlot(data_S, pt.size = 0.05, features = paste0("Trajectory",3,"_genes", 1:N.bin), ncol = N.bin, order = T) &
+  scale_color_gradientn(colors = rev(brewer_pal(palette = "RdYlBu")(10))) & NoLegend() & NoAxes()
+```
 
 
 
