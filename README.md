@@ -62,9 +62,11 @@ write.table(cg_output[["features"]], paste0(dir.path, "gene_names.csv"), row.nam
 write.table(cg_output[["graph.dist"]], paste0(dir.path, "ot_cost.csv"), row.names = F, col.names = F, sep = ",")
 Matrix::writeMM(Matrix(cg_output[["gene.expression"]], sparse = T), paste0(dir.path, "gene_expression.mtx"))
 
-#This can also be run in the terminal. Please make sure to install the latest version of POT module (python), using the following:
+#Please make sure to install the latest version of POT module (python), using the following:
 #pip install -U https://github.com/PythonOT/POT/archive/master.zip
 system(sprintf("nohup /data/anaconda3/bin/python ./GeneTrajectory/python/gene_distance_cal_parallel_Iter50000.py %s &", dir.path)) #Python paths should be adjusted accordingly.
+#Alternatively, this can also be run in the terminal by the following:
+#nohup /data/anaconda3/bin/python ./GeneTrajectory/python/gene_distance_cal_parallel_Iter50000.py ./mouse_dermal/ &
 ```
 
 When the computation is finished, a file named `emd.csv` is generated under the same directory. Gene trajectory extraction and visualization can be done using the following code.
