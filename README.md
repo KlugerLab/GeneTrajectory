@@ -7,7 +7,7 @@ More example vignettes will be added soon. Processed example data can be provide
 
 ## Install
 
-ALRA can be installed as follows:
+GeneTrajectory can be installed as follows:
 
 ```r
 install.packages("devtools")
