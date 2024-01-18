@@ -4,3 +4,12 @@ This is the first version of GeneTrajectory that performs gene trajectory infere
 More example vignettes will be added soon. Processed example data can be provided upon request.
 
 ![Workflow](https://github.com/RihaoQu/IGT/blob/master/images/GT_workflow.png)
+
+## Install
+
+ALRA can be installed as follows:
+
+```r
+install.packages("devtools")
+devtools::install_github("KlugerLab/ALRA")
+```
