@@ -48,13 +48,12 @@ data_S <- FindVariableFeatures(data_S, nfeatures = 2000)
 all_genes <- data_S@assays[[assay]]@var.features
 expr_percent <- apply(as.matrix(data_S[[assay]]@data[all_genes, ]) > 0, 1, sum)/ncol(data_S)
 genes <- all_genes[which(expr_percent > 0.01 & expr_percent < 0.5)]
-length(genes)
 ```
 
 The intermediate outputs are written into a local directory which allows for gene-gene Wasserstein distance computation using [Python OT package](https://pythonot.github.io/).
 ```r
 cg_output <- CoarseGrain(data_S, cell.graph.dist, genes, N = 1000, dims = 1:10)
-dir.path <- "./mouse_dermal/"
+dir.path <- "./mouse_dermal/" #This should be replaced by your local directory path.
 dir.create(dir.path, recursive=T)
 write.table(cg_output[["features"]], paste0(dir.path, "gene_names.csv"), row.names = F, col.names = F, sep = ",")
 write.table(cg_output[["graph.dist"]], paste0(dir.path, "ot_cost.csv"), row.names = F, col.names = F, sep = ",")
@@ -62,7 +61,7 @@ Matrix::writeMM(Matrix(cg_output[["gene.expression"]], sparse = T), paste0(dir.p
 
 #This can also be run in the terminal. Please make sure to install the latest version of POT module (python), using the following:
 #pip install -U https://github.com/PythonOT/POT/archive/master.zip
-system(sprintf("nohup /data/anaconda3/bin/python ./GeneTrajectory/python/gene_distance_cal_parallel.py %s &", dir.path))
+system(sprintf("nohup /data/anaconda3/bin/python ./GeneTrajectory/python/gene_distance_cal_parallel.py %s &", dir.path)) #Python paths should be adjusted accordingly.
 ```
 
 When the computation is finished, a file named `emd.csv` is generated under the same directory. Gene trajectory extraction and visualization can be done using the following code.
