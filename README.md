@@ -18,6 +18,7 @@ devtools::install_github("RihaoQu/IGT")
 The standard preprocessing can be done by employing the [Seurat](https://satijalab.org/seurat/articles/pbmc3k_tutorial.html) R package which includes: library normalization; finding variable features; scaling; generating PCA embedding (and UMAP embedding for visualization).
 
 ```r
+#Load required packages
 require(GeneTrajectory)
 require(plot3D)
 require(ggplot2)
@@ -81,7 +82,7 @@ scatter3D(gene_embedding[,1],
           col = ramp.col(c(hue_pal()(3))))
 ```
 
-Users can choose to visualize gene bin plots by overlaying. This facilitates understanding of how. Here, we would recommend users to apply [ALRA](https://github.com/KlugerLab/ALRA/blob/master/README.md) imputation to smooth the expression values.
+To examine how each given gene trajectory is reflected over the cell graph, we can track how these genes are expressed across different regions in the cell embedding. Here, we would recommend users to apply [ALRA](https://github.com/KlugerLab/ALRA/blob/master/README.md) imputation to smooth the expression values for generating gene bin plots.
 ```r
 N.bin = 7
 data_S <- RunALRA(data_S)
