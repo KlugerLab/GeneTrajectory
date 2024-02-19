@@ -14,7 +14,7 @@ GeneTrajectory can be installed as follows:
 
 ```r
 install.packages("devtools")
-devtools::install_github("RihaoQu/IGT")
+devtools::install_github("KlugerLab/GeneTrajectory")
 ```
 ## Example tutorial
 
