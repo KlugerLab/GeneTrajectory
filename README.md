@@ -25,4 +25,27 @@ References of GeneTrajectory functions can be found [here](https://klugerlab.git
 Data used in the tutorial can be downloaded from [Figshare](https://figshare.com/articles/dataset/Processed_Seurat_objects_for_GeneTrajectory_inference_Gene_Trajectory_Inference_for_Single-cell_Data_by_Optimal_Transport_Metrics_/25243225).
 
 
+## Installation of [GeneTrajectory-python](https://github.com/KlugerLab/GeneTrajectory-python/tree/main) for running gene-gene distance computation in R using [reticulate](https://rstudio.github.io/reticulate/index.html).
+The easiest way is to create a virtualenv for gene_trajectory using [reticulate](https://rstudio.github.io/reticulate/index.html)
+```
+if(!reticulate::virtualenv_exists('gene_trajectory')){
+  reticulate::virtualenv_create('gene_trajectory', packages=c('gene_trajectory'))
+}
+reticulate::use_virtualenv('gene_trajectory')
+```
+or to add to an existing virtualenv using
+```
+reticulate::py_install("gene-trajectory")
+```
+
+In general (especially in a conda environment) it can be installed with pip as 
+```
+system(sprintf('%s -m pip install gene-trajectory', reticulate::py_exe()))
+```
+
+The development version can be installed as
+```
+system(sprintf('%s -m pip install git+https://github.com/Klugerlab/GeneTrajectory-python.git', reticulate::py_exe()))
+```
+This works both on virtualenv and conda.
 
