@@ -20,7 +20,7 @@ devtools::install_github("KlugerLab/GeneTrajectory")
 Please check GeneTrajectory [tutorial](https://klugerlab.github.io/GeneTrajectory/articles/GeneTrajectory.html).
 
 ## References
-References of GeneTrajectory functions can be found [here]([https://klugerlab.github.io/DAseq/reference/index.html](https://klugerlab.github.io/GeneTrajectory/reference/index.html)).
+References of GeneTrajectory functions can be found [here](https://klugerlab.github.io/GeneTrajectory/reference/index.html).
 
 Data used in the tutorial can be downloaded from [Figshare](https://figshare.com/articles/dataset/Processed_Seurat_objects_for_GeneTrajectory_inference_Gene_Trajectory_Inference_for_Single-cell_Data_by_Optimal_Transport_Metrics_/25243225).
 
