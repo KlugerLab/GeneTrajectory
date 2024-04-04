@@ -4,12 +4,10 @@ Version: 1.0.0
 Authors@R: 
     c(person(given = "Rihao",
            family = "Qu",
-           role = c("aut", "cre"),
            email = "rihao.qu@yale.edu",
            comment = c(ORCID = "YOUR-ORCID-ID")),
     person(given = "Francesco",
            family = "Strino",
-           role = c("cre"),
            email = "francesco.strino@pcmgf.com",
            comment = c(ORCID = "YOUR-ORCID-ID")))
 Description: Gene trajectory inference.
