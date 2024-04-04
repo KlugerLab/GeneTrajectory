@@ -9,7 +9,7 @@ Authors@R:
            comment = c(ORCID = "YOUR-ORCID-ID")),
     person(given = "Francesco",
            family = "Strino",
-           role = c("aut"),
+           role = c("cre"),
            email = "francesco.strino@pcmgf.com",
            comment = c(ORCID = "YOUR-ORCID-ID")))
 Description: Gene trajectory inference.
