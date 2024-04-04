@@ -27,24 +27,24 @@ Data used in the tutorial can be downloaded from [Figshare](https://figshare.com
 
 ## Install [GeneTrajectory-python](https://github.com/KlugerLab/GeneTrajectory-python/tree/main)
 The easiest way is to create a virtualenv for gene_trajectory using [reticulate](https://rstudio.github.io/reticulate/index.html)
-```
+```r
 if(!reticulate::virtualenv_exists('gene_trajectory')){
   reticulate::virtualenv_create('gene_trajectory', packages=c('gene_trajectory'))
 }
 reticulate::use_virtualenv('gene_trajectory')
 ```
 or to add to an existing virtualenv using
-```
+```r
 reticulate::py_install("gene-trajectory")
 ```
 
 In general (especially in a conda environment) it can be installed with pip as 
-```
+```r
 system(sprintf('%s -m pip install gene-trajectory', reticulate::py_exe()))
 ```
 
 The development version can be installed as
-```
+```r
 system(sprintf('%s -m pip install git+https://github.com/Klugerlab/GeneTrajectory-python.git', reticulate::py_exe()))
 ```
 This works both on virtualenv and conda.
