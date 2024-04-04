@@ -15,15 +15,15 @@
 #' @return
 #' Returns a gene-by-cell count matrix
 #'
-#' @export
+#' @export simulate.cylinder
 #'
 #' @examples
 #'
 
-simulate_cylinder <- function(N_cells = 5000,
+simulate.cylinder <- function(N_cells = 5000,
                               N_genes = rep(500,2),
                               model = "poisson",
-                              meanlog = 0, 
+                              meanlog = 0,
                               sdlog = 0.25,
                               scale = 25,
                               seed = 1,
@@ -31,10 +31,10 @@ simulate_cylinder <- function(N_cells = 5000,
                               sort = TRUE,
                               sparsity = 0.1,
                               theta = 10){
-  gc_mat_linear <- simulate_linear(N_cells = N_cells,
+  gc_mat_linear <- simulate.linear(N_cells = N_cells,
                                    N_genes = N_genes[1],
                                    model = model,
-                                   meanlog = meanlog, 
+                                   meanlog = meanlog,
                                    sdlog = sdlog,
                                    scale = scale,
                                    seed = seed,
@@ -42,22 +42,22 @@ simulate_cylinder <- function(N_cells = 5000,
                                    sort = sort,
                                    sparsity = sparsity,
                                    theta = theta)
-  gc_mat_cyclic <- simulate_cyclic(N_cells = N_cells,
+  gc_mat_cyclic <- simulate.cyclic(N_cells = N_cells,
                                      N_genes = N_genes[2],
                                      model = model,
-                                     meanlog = meanlog, 
+                                     meanlog = meanlog,
                                      sdlog = sdlog,
                                      scale = scale,
                                      seed = seed,
                                      maxT = maxT,
                                      sparsity = sparsity,
                                      theta = theta)
-                                       
+
   set.seed(1)
   idx = sample(1:ncol(gc_mat_cyclic))
   gc_mat_cylinder <- rbind(gc_mat_linear, gc_mat_cyclic[,idx])
   colnames(gc_mat_cylinder) <- paste0(colnames(gc_mat_linear), "|", colnames(gc_mat_cyclic[,idx]))
-  
+
   gc_mat_cylinder
-} 
+}
 
