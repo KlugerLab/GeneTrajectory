@@ -6,7 +6,7 @@ GeneTrajectory is a method for inferring gene trajectories in scRNA-seq data, wh
 * Step 3. Generate a low-dimensional representation of genes (using Diffusion Map by default) based on the gene-gene Wasserstein distance matrix. Identify gene trajectories in a sequential manner.
 * Step 4. Determine the order of genes along each gene trajectory.
 
-![Workflow](https://github.com/RihaoQu/IGT/blob/master/images/GT_workflow.png)
+![Workflow](./vignettes/GT_workflow.png)
 
 ## Install
 
