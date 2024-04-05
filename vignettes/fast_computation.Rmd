@@ -19,7 +19,7 @@ In practice, computing the Wasserstein distance between all pairwise gene distri
 # Preparation
 ```{r, warning = FALSE, message=FALSE}
 ##### Load required R libraries
-library(Seurat)
+require(Seurat)
 require(scales)
 require(ggplot2)
 require(viridis)
@@ -27,16 +27,17 @@ require(dplyr)
 require(GeneTrajectory)
 require(Matrix)
 require(plot3D)
-library(FNN)
+require(FNN)
 ```
 
 The preprocessed Seurat object for this tutorial can be downloaded from [figshare](https://figshare.com/articles/dataset/Processed_Seurat_objects_for_GeneTrajectory_inference_Gene_Trajectory_Inference_for_Single-cell_Data_by_Optimal_Transport_Metrics_/25243225).
 
-```{r, warning = FALSE, fig.width=7, fig.height=4.5}
+```{r, warning = FALSE, fig.width=7, fig.height=4.5, eval=F}
 # Import the tutorial dataset
 data_S <- readRDS("../../data/human_myeloid_seurat_obj.rds")
 
 # In this tutorial, we demonstrate gene-gene distance computation by selecting the genes expressed by 1% to 50% of cells among the top 500 variable genes. 
+
 assay <- "RNA"
 DefaultAssay(data_S) <- assay
 data_S <- FindVariableFeatures(data_S, nfeatures = 500)
@@ -56,18 +57,24 @@ if(!reticulate::virtualenv_exists('gene_trajectory')){
   reticulate::virtualenv_create('gene_trajectory', packages=c('gene_trajectory'))
 }
 reticulate::use_virtualenv('gene_trajectory')
+
 # Import the function to compute gene-gene distances
 cal_ot_mat_from_numpy <- reticulate::import('gene_trajectory.compute_gene_distance_cmd')$cal_ot_mat_from_numpy
 ```
 
 # Strategy-1: cell graph coarse-graining
 To improve computation efficiency, we coarse-grain the cell graph by grouping cells into `N` "meta-cells".
+
+Example: coarse-grain the cell graph by grouping cells into `N`=500 "meta-cells"
+
 ```{r, warning = FALSE, message=FALSE, eval=FALSE}
-# Example: coarse-grain the cell graph by grouping cells into `N`=500 "meta-cells"
 cg_output1 <- CoarseGrain(data_S, cell.graph.dist, genes, N = 500)
 gene.dist.mat1 <- cal_ot_mat_from_numpy(ot_cost = cg_output1[["graph.dist"]], gene_expr = cg_output1[["gene.expression"]])
+```
 
-# Example: coarse-grain the cell graph by grouping cells into `N`=1000 "meta-cells", which will take a longer time to complete as compared with using `N`=500 "meta-cells". However, it can better preserve the local geometry of the cell graph.
+Example: coarse-grain the cell graph by grouping cells into `N`=1000 "meta-cells", which will take a longer time to complete as compared with using `N`=500 "meta-cells". However, it can better preserve the local geometry of the cell graph.
+
+```{r, warning = FALSE, message=FALSE, eval=FALSE}
 cg_output2 <- CoarseGrain(data_S, cell.graph.dist, genes, N = 1000)
 gene.dist.mat2 <- cal_ot_mat_from_numpy(ot_cost = cg_output2[["graph.dist"]], gene_expr = cg_output2[["gene.expression"]])
 ```

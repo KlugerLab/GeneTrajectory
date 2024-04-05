@@ -31,7 +31,7 @@ GeneTrajectory is a method for inferring gene trajectories in scRNA-seq data, wh
 ```{r, warning = FALSE, message=FALSE}
 
 ##### Load required R libraries
-library(Seurat)
+require(Seurat)
 require(scales)
 require(ggplot2)
 require(viridis)

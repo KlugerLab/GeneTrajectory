@@ -112,7 +112,7 @@ the capacity of their computing resources.</p>
 </h2>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">##### Load required R libraries</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://satijalab.org/seurat" class="external-link">Seurat</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="va"><a href="https://satijalab.org/seurat" class="external-link">Seurat</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="va"><a href="https://scales.r-lib.org" class="external-link">scales</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="va"><a href="https://sjmgarnier.github.io/viridis/" class="external-link">viridis</a></span><span class="op">)</span></span>
@@ -120,7 +120,7 @@ the capacity of their computing resources.</p>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="va">GeneTrajectory</span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="va"><a href="https://Matrix.R-forge.R-project.org" class="external-link">Matrix</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="va">plot3D</span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">FNN</span><span class="op">)</span></span></code></pre></div>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="va">FNN</span><span class="op">)</span></span></code></pre></div>
 <p>The preprocessed Seurat object for this tutorial can be downloaded
 from <a href="https://figshare.com/articles/dataset/Processed_Seurat_objects_for_GeneTrajectory_inference_Gene_Trajectory_Inference_for_Single-cell_Data_by_Optimal_Transport_Metrics_/25243225" class="external-link">figshare</a>.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
@@ -128,29 +128,27 @@ from <a href="https://figshare.com/articles/dataset/Processed_Seurat_objects_for
 <span><span class="va">data_S</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="st">"../../data/human_myeloid_seurat_obj.rds"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># In this tutorial, we demonstrate gene-gene distance computation by selecting the genes expressed by 1% to 50% of cells among the top 500 variable genes. </span></span>
+<span></span>
 <span><span class="va">assay</span> <span class="op">&lt;-</span> <span class="st">"RNA"</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/SeuratObject/man/DefaultAssay.html" class="external-link">DefaultAssay</a></span><span class="op">(</span><span class="va">data_S</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">assay</span></span>
 <span><span class="va">data_S</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/FindVariableFeatures.html" class="external-link">FindVariableFeatures</a></span><span class="op">(</span><span class="va">data_S</span>, nfeatures <span class="op">=</span> <span class="fl">500</span><span class="op">)</span></span>
 <span><span class="va">all_genes</span> <span class="op">&lt;-</span> <span class="va">data_S</span><span class="op">@</span><span class="va">assays</span><span class="op">[[</span><span class="va">assay</span><span class="op">]</span><span class="op">]</span><span class="op">@</span><span class="va">var.features</span></span>
 <span><span class="va">expr_percent</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/apply.html" class="external-link">apply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">data_S</span><span class="op">[[</span><span class="va">assay</span><span class="op">]</span><span class="op">]</span><span class="op">@</span><span class="va">data</span><span class="op">[</span><span class="va">all_genes</span>, <span class="op">]</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0</span>, <span class="fl">1</span>, <span class="va">sum</span><span class="op">)</span><span class="op">/</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">data_S</span><span class="op">)</span></span>
 <span><span class="va">genes</span> <span class="op">&lt;-</span> <span class="va">all_genes</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="va">expr_percent</span> <span class="op">&gt;</span> <span class="fl">0.01</span> <span class="op">&amp;</span> <span class="va">expr_percent</span> <span class="op">&lt;</span> <span class="fl">0.5</span><span class="op">)</span><span class="op">]</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">genes</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## [1] 251</span></span></code></pre>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Compute the Diffusion Map cell embedding</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">genes</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Compute the Diffusion Map cell embedding</span></span>
 <span><span class="va">data_S</span> <span class="op">&lt;-</span> <span class="fu">GeneTrajectory</span><span class="fu">::</span><span class="fu"><a href="../reference/RunDM.html">RunDM</a></span><span class="op">(</span><span class="va">data_S</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Calculate cell-cell graph distances over a cell-cell kNN graph</span></span>
-<span><span class="va">cell.graph.dist</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetGraphDistance.html">GetGraphDistance</a></span><span class="op">(</span><span class="va">data_S</span>, K <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## Constructing kNN graph</span></span></code></pre>
-<pre><code><span><span class="co">## Constructing graph distance matrix</span></span></code></pre>
-<pre><code><span><span class="co">## The largest graph distance is 35</span></span></code></pre>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Create a virtualenv using reticulate for gene-gene distance computation</span></span>
+<span><span class="va">cell.graph.dist</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetGraphDistance.html">GetGraphDistance</a></span><span class="op">(</span><span class="va">data_S</span>, K <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Create a virtualenv using reticulate for gene-gene distance computation</span></span>
 <span><span class="kw">if</span><span class="op">(</span><span class="op">!</span><span class="fu">reticulate</span><span class="fu">::</span><span class="fu"><a href="https://rstudio.github.io/reticulate/reference/virtualenv-tools.html" class="external-link">virtualenv_exists</a></span><span class="op">(</span><span class="st">'gene_trajectory'</span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
 <span>  <span class="fu">reticulate</span><span class="fu">::</span><span class="fu"><a href="https://rstudio.github.io/reticulate/reference/virtualenv-tools.html" class="external-link">virtualenv_create</a></span><span class="op">(</span><span class="st">'gene_trajectory'</span>, packages<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'gene_trajectory'</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span><span class="fu">reticulate</span><span class="fu">::</span><span class="fu"><a href="https://rstudio.github.io/reticulate/reference/use_python.html" class="external-link">use_virtualenv</a></span><span class="op">(</span><span class="st">'gene_trajectory'</span><span class="op">)</span></span>
+<span></span>
 <span><span class="co"># Import the function to compute gene-gene distances</span></span>
 <span><span class="va">cal_ot_mat_from_numpy</span> <span class="op">&lt;-</span> <span class="fu">reticulate</span><span class="fu">::</span><span class="fu"><a href="https://rstudio.github.io/reticulate/reference/import.html" class="external-link">import</a></span><span class="op">(</span><span class="st">'gene_trajectory.compute_gene_distance_cmd'</span><span class="op">)</span><span class="op">$</span><span class="va">cal_ot_mat_from_numpy</span></span></code></pre></div>
 </div>
@@ -159,13 +157,18 @@ from <a href="https://figshare.com/articles/dataset/Processed_Seurat_objects_for
 </h2>
 <p>To improve computation efficiency, we coarse-grain the cell graph by
 grouping cells into <code>N</code> “meta-cells”.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Example: coarse-grain the cell graph by grouping cells into `N`=500 "meta-cells"</span></span>
-<span><span class="va">cg_output1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/CoarseGrain.html">CoarseGrain</a></span><span class="op">(</span><span class="va">data_S</span>, <span class="va">cell.graph.dist</span>, <span class="va">genes</span>, N <span class="op">=</span> <span class="fl">500</span><span class="op">)</span></span>
-<span><span class="va">gene.dist.mat1</span> <span class="op">&lt;-</span> <span class="fu">cal_ot_mat_from_numpy</span><span class="op">(</span>ot_cost <span class="op">=</span> <span class="va">cg_output1</span><span class="op">[[</span><span class="st">"graph.dist"</span><span class="op">]</span><span class="op">]</span>, gene_expr <span class="op">=</span> <span class="va">cg_output1</span><span class="op">[[</span><span class="st">"gene.expression"</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Example: coarse-grain the cell graph by grouping cells into `N`=1000 "meta-cells", which will take a longer time to complete as compared with using `N`=500 "meta-cells". However, it can better preserve the local geometry of the cell graph.</span></span>
-<span><span class="va">cg_output2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/CoarseGrain.html">CoarseGrain</a></span><span class="op">(</span><span class="va">data_S</span>, <span class="va">cell.graph.dist</span>, <span class="va">genes</span>, N <span class="op">=</span> <span class="fl">1000</span><span class="op">)</span></span>
+<p>Example: coarse-grain the cell graph by grouping cells into
+<code>N</code>=500 “meta-cells”</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">cg_output1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/CoarseGrain.html">CoarseGrain</a></span><span class="op">(</span><span class="va">data_S</span>, <span class="va">cell.graph.dist</span>, <span class="va">genes</span>, N <span class="op">=</span> <span class="fl">500</span><span class="op">)</span></span>
+<span><span class="va">gene.dist.mat1</span> <span class="op">&lt;-</span> <span class="fu">cal_ot_mat_from_numpy</span><span class="op">(</span>ot_cost <span class="op">=</span> <span class="va">cg_output1</span><span class="op">[[</span><span class="st">"graph.dist"</span><span class="op">]</span><span class="op">]</span>, gene_expr <span class="op">=</span> <span class="va">cg_output1</span><span class="op">[[</span><span class="st">"gene.expression"</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span></code></pre></div>
+<p>Example: coarse-grain the cell graph by grouping cells into
+<code>N</code>=1000 “meta-cells”, which will take a longer time to
+complete as compared with using <code>N</code>=500 “meta-cells”.
+However, it can better preserve the local geometry of the cell
+graph.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">cg_output2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/CoarseGrain.html">CoarseGrain</a></span><span class="op">(</span><span class="va">data_S</span>, <span class="va">cell.graph.dist</span>, <span class="va">genes</span>, N <span class="op">=</span> <span class="fl">1000</span><span class="op">)</span></span>
 <span><span class="va">gene.dist.mat2</span> <span class="op">&lt;-</span> <span class="fu">cal_ot_mat_from_numpy</span><span class="op">(</span>ot_cost <span class="op">=</span> <span class="va">cg_output2</span><span class="op">[[</span><span class="st">"graph.dist"</span><span class="op">]</span><span class="op">]</span>, gene_expr <span class="op">=</span> <span class="va">cg_output2</span><span class="op">[[</span><span class="st">"gene.expression"</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -197,7 +200,7 @@ Wasserstein distances for all pairs of genes.</p>
 <p>Below shows an example of computing gene-gene distances over the
 original cell graph, utilizing the precomputed gene-gene distance matrix
 on <code>N</code> = 500. Here, we choose <span class="math inline">\(α=5\)</span>, <span class="math inline">\(K=5\)</span>.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">alpha</span> <span class="op">=</span> <span class="fl">5</span></span>
 <span><span class="va">K</span> <span class="op">=</span> <span class="fl">5</span></span>
 <span><span class="va">knn.index</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/FNN/man/get.knn.html" class="external-link">get.knn</a></span><span class="op">(</span><span class="va">gene.dist.mat1</span>, k<span class="op">=</span><span class="va">alpha</span><span class="op">*</span><span class="va">K</span><span class="op">)</span><span class="op">$</span><span class="va">nn.index</span> </span>
@@ -209,7 +212,7 @@ on <code>N</code> = 500. Here, we choose <span class="math inline">\(α=5\)</spa
 <div class="section level2">
 <h2 id="comparing-gene-embeddings">Comparing gene embeddings<a class="anchor" aria-label="anchor" href="#comparing-gene-embeddings"></a>
 </h2>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Construct the gene embedding by employing Diffusion Map</span></span>
 <span><span class="va">gene_embedding1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetGeneEmbedding.html">GetGeneEmbedding</a></span><span class="op">(</span><span class="va">gene.dist.mat1</span>, K <span class="op">=</span> <span class="fl">5</span><span class="op">)</span><span class="op">$</span><span class="va">diffu.emb</span></span>
 <span><span class="va">gene_embedding2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GetGeneEmbedding.html">GetGeneEmbedding</a></span><span class="op">(</span><span class="va">gene.dist.mat2</span>, K <span class="op">=</span> <span class="fl">5</span><span class="op">)</span><span class="op">$</span><span class="va">diffu.emb</span></span>
@@ -225,8 +228,8 @@ on <code>N</code> = 500. Here, we choose <span class="math inline">\(α=5\)</spa
 <span>          bty <span class="op">=</span> <span class="st">"b2"</span>, colvar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">as.factor</a></span><span class="op">(</span><span class="va">gene_trajectory</span><span class="op">$</span><span class="va">selected</span><span class="op">)</span><span class="op">)</span><span class="op">-</span><span class="fl">1</span>,</span>
 <span>          main <span class="op">=</span> <span class="st">"Gene Embedding 1"</span>, pch <span class="op">=</span> <span class="fl">19</span>, cex <span class="op">=</span> <span class="fl">1</span>, theta <span class="op">=</span> <span class="fl">45</span>, phi <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>          col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/plot3D/man/colors.html" class="external-link">ramp.col</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://scales.r-lib.org/reference/hue_pal.html" class="external-link">hue_pal</a></span><span class="op">(</span><span class="op">)</span><span class="op">(</span><span class="fl">3</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><img src="fast_computation_files/figure-html/unnamed-chunk-6-1.png" width="700"></p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<p><img src="fast_computation_files/figure-html/unnamed-chunk-7-1.png" width="700"></p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Visualize gene_embedding2</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/plot3D/man/scatter.html" class="external-link">scatter3D</a></span><span class="op">(</span><span class="va">gene_embedding2</span><span class="op">[</span>,<span class="fl">1</span><span class="op">]</span>,</span>
 <span>          <span class="va">gene_embedding2</span><span class="op">[</span>,<span class="fl">2</span><span class="op">]</span>,</span>
@@ -234,8 +237,8 @@ on <code>N</code> = 500. Here, we choose <span class="math inline">\(α=5\)</spa
 <span>          bty <span class="op">=</span> <span class="st">"b2"</span>, colvar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">as.factor</a></span><span class="op">(</span><span class="va">gene_trajectory</span><span class="op">$</span><span class="va">selected</span><span class="op">)</span><span class="op">)</span><span class="op">-</span><span class="fl">1</span>,</span>
 <span>          main <span class="op">=</span> <span class="st">"Gene Embedding 2"</span>, pch <span class="op">=</span> <span class="fl">19</span>, cex <span class="op">=</span> <span class="fl">1</span>, theta <span class="op">=</span> <span class="fl">45</span>, phi <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>          col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/plot3D/man/colors.html" class="external-link">ramp.col</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://scales.r-lib.org/reference/hue_pal.html" class="external-link">hue_pal</a></span><span class="op">(</span><span class="op">)</span><span class="op">(</span><span class="fl">3</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><img src="fast_computation_files/figure-html/unnamed-chunk-6-2.png" width="700"></p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<p><img src="fast_computation_files/figure-html/unnamed-chunk-7-2.png" width="700"></p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Visualize gene_embedding3</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/plot3D/man/scatter.html" class="external-link">scatter3D</a></span><span class="op">(</span><span class="va">gene_embedding3</span><span class="op">[</span>,<span class="fl">1</span><span class="op">]</span>,</span>
 <span>          <span class="va">gene_embedding3</span><span class="op">[</span>,<span class="fl">2</span><span class="op">]</span>,</span>
@@ -243,12 +246,12 @@ on <code>N</code> = 500. Here, we choose <span class="math inline">\(α=5\)</spa
 <span>          bty <span class="op">=</span> <span class="st">"b2"</span>, colvar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">as.factor</a></span><span class="op">(</span><span class="va">gene_trajectory</span><span class="op">$</span><span class="va">selected</span><span class="op">)</span><span class="op">)</span><span class="op">-</span><span class="fl">1</span>,</span>
 <span>          main <span class="op">=</span> <span class="st">"Gene Embedding 3"</span>, pch <span class="op">=</span> <span class="fl">19</span>, cex <span class="op">=</span> <span class="fl">1</span>, theta <span class="op">=</span> <span class="fl">45</span>, phi <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>          col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/plot3D/man/colors.html" class="external-link">ramp.col</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://scales.r-lib.org/reference/hue_pal.html" class="external-link">hue_pal</a></span><span class="op">(</span><span class="op">)</span><span class="op">(</span><span class="fl">3</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><img src="fast_computation_files/figure-html/unnamed-chunk-6-3.png" width="700"></p>
+<p><img src="fast_computation_files/figure-html/unnamed-chunk-7-3.png" width="700"></p>
 </div>
 <div class="section level2">
 <h2 id="session-information">Session information<a class="anchor" aria-label="anchor" href="#session-information"></a>
 </h2>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html" class="external-link">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## R version 4.3.1 (2023-06-16)</span></span>
 <span><span class="co">## Platform: x86_64-pc-linux-gnu (64-bit)</span></span>
