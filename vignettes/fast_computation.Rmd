@@ -1,0 +1,134 @@
+---
+title: "Improve the computation efficiency of gene-gene distance matrix"
+author: "Rihao Qu, Francesco Strino"
+date: "03/20/2024"
+output: 
+  rmarkdown::html_document:
+    toc: true
+    toc_depth: 2
+---
+  
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#knitr::opts_chunk$set(fig.width=5, fig.height=4.5) 
+```
+
+# Overview
+In practice, computing the Wasserstein distance between all pairwise gene distri- butions can be computationally expensive. When the cell graph is large, the time cost for finding the optimal transport solution increases exponentially. In our framework, we have designed two strategies to accelerate the computation based on 1) cell graph coarse-graining, and 2) gene graph sparsification. Briefly, cell graph coarse-graining aims to reduce the cell number by aggregating nearest cells into “meta-cells”. Gene graph sparsification aims to skip the computation for two gene distributions if they are very far away from each other at a coarse-grained level, as they are unlikely to participate in the same biological process. We note that while coarse-graining the cell graph to a crude scale can make it fast for computation, it may lose accuracy and compromise the resolution. Hence users should judiciously choose the level of coarse graining based on the capacity of their computing resources.
+
+# Preparation
+```{r, warning = FALSE, message=FALSE}
+##### Load required R libraries
+library(Seurat)
+require(scales)
+require(ggplot2)
+require(viridis)
+require(dplyr)
+require(GeneTrajectory)
+require(Matrix)
+require(plot3D)
+library(FNN)
+```
+
+The preprocessed Seurat object for this tutorial can be downloaded from [figshare](https://figshare.com/articles/dataset/Processed_Seurat_objects_for_GeneTrajectory_inference_Gene_Trajectory_Inference_for_Single-cell_Data_by_Optimal_Transport_Metrics_/25243225).
+
+```{r, warning = FALSE, fig.width=7, fig.height=4.5}
+# Import the tutorial dataset
+data_S <- readRDS("../../data/human_myeloid_seurat_obj.rds")
+
+# In this tutorial, we demonstrate gene-gene distance computation by selecting the genes expressed by 1% to 50% of cells among the top 500 variable genes. 
+assay <- "RNA"
+DefaultAssay(data_S) <- assay
+data_S <- FindVariableFeatures(data_S, nfeatures = 500)
+all_genes <- data_S@assays[[assay]]@var.features
+expr_percent <- apply(as.matrix(data_S[[assay]]@data[all_genes, ]) > 0, 1, sum)/ncol(data_S)
+genes <- all_genes[which(expr_percent > 0.01 & expr_percent < 0.5)]
+length(genes)
+
+# Compute the Diffusion Map cell embedding
+data_S <- GeneTrajectory::RunDM(data_S)
+
+# Calculate cell-cell graph distances over a cell-cell kNN graph
+cell.graph.dist <- GetGraphDistance(data_S, K = 10)
+
+# Create a virtualenv using reticulate for gene-gene distance computation
+if(!reticulate::virtualenv_exists('gene_trajectory')){
+  reticulate::virtualenv_create('gene_trajectory', packages=c('gene_trajectory'))
+}
+reticulate::use_virtualenv('gene_trajectory')
+# Import the function to compute gene-gene distances
+cal_ot_mat_from_numpy <- reticulate::import('gene_trajectory.compute_gene_distance_cmd')$cal_ot_mat_from_numpy
+```
+
+# Strategy-1: cell graph coarse-graining
+To improve computation efficiency, we coarse-grain the cell graph by grouping cells into `N` "meta-cells".
+```{r, warning = FALSE, message=TRUE}
+# Example: coarse-grain the cell graph by grouping cells into `N`=500 "meta-cells"
+cg_output1 <- CoarseGrain(data_S, cell.graph.dist, genes, N = 500)
+gene.dist.mat1 <- cal_ot_mat_from_numpy(ot_cost = cg_output1[["graph.dist"]], gene_expr = cg_output1[["gene.expression"]])
+
+# Example: coarse-grain the cell graph by grouping cells into `N`=1000 "meta-cells", which will take a longer time to complete as compared with using `N`=500 "meta-cells". However, it can better preserve the local geometry of the cell graph.
+cg_output2 <- CoarseGrain(data_S, cell.graph.dist, genes, N = 1000)
+gene.dist.mat2 <- cal_ot_mat_from_numpy(ot_cost = cg_output2[["graph.dist"]], gene_expr = cg_output2[["gene.expression"]])
+```
+
+
+# Strategy-2: gene graph sparsification
+We sparsify the gene affinity graph by zeroing out the entries where their pairwise Wasserstein distances are greater than a threshold. The threshold is selected such that affinities associated with distances greater than it will be exponentially small and thus contribute negligibly to the gene affinity graph. The threshold is adaptively estimated for each cell using the approximate Wasserstein distance on a coarse-grained cell graph (Strategy 1) which allows fast computation.
+
+Specifically, this is formulated in the following way: if we want to construct the gene-gene Wasserstein distance matrix on a cell graph of a size $m$, we first coarse-grain $m$ cells into $m′$ “meta-cells” using the procedure in Strategy 1 where $m′$ is a size that can be quickly handled. Based on the gene-by-gene Wasserstein distance matrix constructed on $m′$ “meta-cells”, we identify the $αk$ nearest neighbors for each gene (where $α$ is the predefined parameter (ideally, choosing $α \geq k$) and $k$ is the neighborhood size to construct the local adaptive kernel for computing the gene Diffusion Map embedding in the next step). Going back to the computation on the original cell graph, we then only compute the Wasserstein distance between a pair of genes if one of them is included in the other’s $αk$ nearest neighbors. Practically, this can reduce the running time to $2αk/m$ of the original which computes Wasserstein distances for all pairs of genes.
+
+Below shows an example of computing gene-gene distances over the original cell graph, utilizing the precomputed gene-gene distance matrix on `N` = 500. Here, we choose $α=5$, $K=5$.
+
+```{r, warning = FALSE, message=TRUE}
+alpha = 5
+K = 5
+knn.index <- get.knn(gene.dist.mat1, k=alpha*K)$nn.index 
+gene.pairs <- cbind(rep(1:nrow(knn.index), each = ncol(knn.index)), as.integer(t(knn.index)))
+gene.pairs <- gene.pairs[which(gene.pairs[,1] < gene.pairs[,2]),]
+
+gene.dist.mat3 <- cal_ot_mat_from_numpy(ot_cost = cell.graph.dist, gene_expr = t(as.matrix(data_S[[assay]]@data[genes,])), gene_pairs = gene.pairs-1L) # Here, using -1L is to match the indexing criterion in Python.
+```
+
+
+
+```{r, warning = FALSE, message=FALSE}
+# Construct the gene embedding by employing Diffusion Map
+gene_embedding1 <- GetGeneEmbedding(gene.dist.mat1, K = 5)$diffu.emb
+gene_embedding2 <- GetGeneEmbedding(gene.dist.mat2, K = 5)$diffu.emb
+gene_embedding3 <- GetGeneEmbedding(gene.dist.mat3, K = 5)$diffu.emb
+
+# Extract gene trajectories using gene_embedding1 and project onto gene_embedding2 and gene_embedding3 for visual comparison
+gene_trajectory <- ExtractGeneTrajectory(gene_embedding1, gene.dist.mat1, N = 3, t.list = c(4,7,7), K = 5)
+
+# Visualize gene_embedding1
+scatter3D(gene_embedding1[,1],
+          gene_embedding1[,2],
+          gene_embedding1[,3],
+          bty = "b2", colvar = as.integer(as.factor(gene_trajectory$selected))-1,
+          main = "Gene Embedding 1", pch = 19, cex = 1, theta = 45, phi = 0,
+          col = ramp.col(c(hue_pal()(3))))
+
+# Visualize gene_embedding2
+scatter3D(gene_embedding2[,1],
+          gene_embedding2[,2],
+          gene_embedding2[,3],
+          bty = "b2", colvar = as.integer(as.factor(gene_trajectory$selected))-1,
+          main = "Gene Embedding 2", pch = 19, cex = 1, theta = 45, phi = 0,
+          col = ramp.col(c(hue_pal()(3))))
+
+# Visualize gene_embedding3
+scatter3D(gene_embedding3[,1],
+          gene_embedding3[,2],
+          gene_embedding3[,3],
+          bty = "b2", colvar = as.integer(as.factor(gene_trajectory$selected))-1,
+          main = "Gene Embedding 3", pch = 19, cex = 1, theta = 45, phi = 0,
+          col = ramp.col(c(hue_pal()(3))))
+```
+
+
+
+# Session information
+```{r, warning = FALSE}
+sessionInfo()
+```

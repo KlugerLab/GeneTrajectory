@@ -3,5 +3,6 @@ pkgdown: 2.0.7
 pkgdown_sha: ~
 articles:
   GeneTrajectory: GeneTrajectory.html
-last_built: 2024-04-05T04:46Z
+  fast_computation: fast_computation.html
+last_built: 2024-04-05T07:59Z
 

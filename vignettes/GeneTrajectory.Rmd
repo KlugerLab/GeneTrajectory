@@ -58,7 +58,7 @@ DimPlot(data_S, group.by = "celltype", shuffle = T)
 ```
 
 # Gene-gene distance computation
-In this tutorial, we demonstrate gene-gene distance computation by selecting the top 500 variable genes expressed by 1% to 50% of cells. The expected running time for this computation is approximately 1 to 3 minutes. 
+In this tutorial, we demonstrate gene-gene distance computation by selecting the genes expressed by 1% to 50% of cells among the top 500 variable genes. The expected running time for this computation is approximately 1 to 3 minutes. 
 
 ## Select genes
 ```{r, warning = FALSE}
@@ -94,7 +94,7 @@ reticulate::use_virtualenv('gene_trajectory')
 # Import the function to compute gene-gene distances
 cal_ot_mat_from_numpy <- reticulate::import('gene_trajectory.compute_gene_distance_cmd')$cal_ot_mat_from_numpy
 # Compute gene-gene distances (this is usually the most time-consuming step, which can take hours if the computation is done on thousands of genes over a large cell graph.)
-gene.dist.mat <- cal_ot_mat_from_numpy(ot_cost = cg_output[["graph.dist"]], gene_expr = cg_output[["gene.expression"]])
+gene.dist.mat <- cal_ot_mat_from_numpy(ot_cost = cg_output[["graph.dist"]], gene_expr = cg_output[["gene.expression"]], num_iter_max = 50000, show_progress_bar = TRUE)
 rownames(gene.dist.mat) <- cg_output[["features"]]
 colnames(gene.dist.mat) <- cg_output[["features"]]
 dim(gene.dist.mat)

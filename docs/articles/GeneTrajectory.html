@@ -45,6 +45,18 @@
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Articles
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+<li>
+      <a href="../articles/fast_computation.html">Improve the computation efficiency of gene-gene distance matrix</a>
+    </li>
+  </ul>
+</li>
 <li>
   <a href="../news/index.html">Changelog</a>
 </li>
@@ -137,9 +149,9 @@ from <a href="https://figshare.com/articles/dataset/Processed_Seurat_objects_for
 <h2 id="gene-gene-distance-computation">Gene-gene distance computation<a class="anchor" aria-label="anchor" href="#gene-gene-distance-computation"></a>
 </h2>
 <p>In this tutorial, we demonstrate gene-gene distance computation by
-selecting the top 500 variable genes expressed by 1% to 50% of cells.
-The expected running time for this computation is approximately 1 to 3
-minutes.</p>
+selecting the genes expressed by 1% to 50% of cells among the top 500
+variable genes. The expected running time for this computation is
+approximately 1 to 3 minutes.</p>
 <div class="section level3">
 <h3 id="select-genes">Select genes<a class="anchor" aria-label="anchor" href="#select-genes"></a>
 </h3>
@@ -193,7 +205,7 @@ R package.</p>
 <span><span class="co"># Import the function to compute gene-gene distances</span></span>
 <span><span class="va">cal_ot_mat_from_numpy</span> <span class="op">&lt;-</span> <span class="fu">reticulate</span><span class="fu">::</span><span class="fu"><a href="https://rstudio.github.io/reticulate/reference/import.html" class="external-link">import</a></span><span class="op">(</span><span class="st">'gene_trajectory.compute_gene_distance_cmd'</span><span class="op">)</span><span class="op">$</span><span class="va">cal_ot_mat_from_numpy</span></span>
 <span><span class="co"># Compute gene-gene distances (this is usually the most time-consuming step, which can take hours if the computation is done on thousands of genes over a large cell graph.)</span></span>
-<span><span class="va">gene.dist.mat</span> <span class="op">&lt;-</span> <span class="fu">cal_ot_mat_from_numpy</span><span class="op">(</span>ot_cost <span class="op">=</span> <span class="va">cg_output</span><span class="op">[[</span><span class="st">"graph.dist"</span><span class="op">]</span><span class="op">]</span>, gene_expr <span class="op">=</span> <span class="va">cg_output</span><span class="op">[[</span><span class="st">"gene.expression"</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="va">gene.dist.mat</span> <span class="op">&lt;-</span> <span class="fu">cal_ot_mat_from_numpy</span><span class="op">(</span>ot_cost <span class="op">=</span> <span class="va">cg_output</span><span class="op">[[</span><span class="st">"graph.dist"</span><span class="op">]</span><span class="op">]</span>, gene_expr <span class="op">=</span> <span class="va">cg_output</span><span class="op">[[</span><span class="st">"gene.expression"</span><span class="op">]</span><span class="op">]</span>, num_iter_max <span class="op">=</span> <span class="fl">50000</span>, show_progress_bar <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">gene.dist.mat</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">cg_output</span><span class="op">[[</span><span class="st">"features"</span><span class="op">]</span><span class="op">]</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">gene.dist.mat</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">cg_output</span><span class="op">[[</span><span class="st">"features"</span><span class="op">]</span><span class="op">]</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">gene.dist.mat</span><span class="op">)</span></span></code></pre></div>
