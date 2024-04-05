@@ -16,6 +16,9 @@
     <loc>/index.html</loc>
   </url>
   <url>
+    <loc>/news/index.html</loc>
+  </url>
+  <url>
     <loc>/reference/AddGeneBinScore.html</loc>
   </url>
   <url>
@@ -40,9 +43,6 @@
     <loc>/reference/RunDM.html</loc>
   </url>
   <url>
-    <loc>/reference/checkIgtPythonEnvironment.html</loc>
-  </url>
-  <url>
     <loc>/reference/coarse.grain.html</loc>
   </url>
   <url>
@@ -55,21 +55,18 @@
     <loc>/reference/index.html</loc>
   </url>
   <url>
-    <loc>/reference/setupIgtPythonEnvironment.html</loc>
+    <loc>/reference/simulate_bifurcation.html</loc>
   </url>
   <url>
-    <loc>/reference/simulate.bifurcation.html</loc>
+    <loc>/reference/simulate_coral.html</loc>
   </url>
   <url>
-    <loc>/reference/simulate.coral.html</loc>
+    <loc>/reference/simulate_cyclic.html</loc>
   </url>
   <url>
-    <loc>/reference/simulate.cyclic.html</loc>
+    <loc>/reference/simulate_cylinder.html</loc>
   </url>
   <url>
-    <loc>/reference/simulate.cylinder.html</loc>
-  </url>
-  <url>
-    <loc>/reference/simulate.linear.html</loc>
+    <loc>/reference/simulate_linear.html</loc>
   </url>
 </urlset>

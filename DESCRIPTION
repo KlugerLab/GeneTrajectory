@@ -30,3 +30,7 @@ Imports:
 	biclust,
 	stats,
 	Matrix (>= 1.5)
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr

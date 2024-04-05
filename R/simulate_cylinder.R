@@ -15,12 +15,12 @@
 #' @return
 #' Returns a gene-by-cell count matrix
 #'
-#' @export simulate.cylinder
+#' @export simulate_cylinder
 #'
 #' @examples
 #'
 
-simulate.cylinder <- function(N_cells = 5000,
+simulate_cylinder <- function(N_cells = 5000,
                               N_genes = rep(500,2),
                               model = "poisson",
                               meanlog = 0,
@@ -31,7 +31,7 @@ simulate.cylinder <- function(N_cells = 5000,
                               sort = TRUE,
                               sparsity = 0.1,
                               theta = 10){
-  gc_mat_linear <- simulate.linear(N_cells = N_cells,
+  gc_mat_linear <- simulate_linear(N_cells = N_cells,
                                    N_genes = N_genes[1],
                                    model = model,
                                    meanlog = meanlog,
@@ -42,7 +42,7 @@ simulate.cylinder <- function(N_cells = 5000,
                                    sort = sort,
                                    sparsity = sparsity,
                                    theta = theta)
-  gc_mat_cyclic <- simulate.cyclic(N_cells = N_cells,
+  gc_mat_cyclic <- simulate_cyclic(N_cells = N_cells,
                                      N_genes = N_genes[2],
                                      model = model,
                                      meanlog = meanlog,

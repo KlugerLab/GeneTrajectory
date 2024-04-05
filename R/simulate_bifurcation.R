@@ -1,46 +1,42 @@
-#' Simulate a multi-level lineage differentiation process coupled with cell cycle
+#' Simulate bifurcating gene process
 #'
-#' @param N_cells integer vector; Number of cells associated with the differentiation process
-#' @param N_genes integer vector; Number of genes associated with the differentiation process
-#' @param N_genes integer vector; Number of genes associated with the cell cycle process
+#' @param N_cells integer vector; Number of cells in the parent process and two daughter processes
+#' @param N_genes integer vector; Number of genes associated with the parent process and two daughter processes
 #' @param model character; Count model ("poisson" or "negbin")
 #' @param meanlog numeric; Mean of log normal distribution
 #' @param sdlog numeric; Standard deviation of log normal distribution
 #' @param scale numeric; Scale of UMI counts
 #' @param seed integer; Random seed
-#' @param maxT numeric; Maximum cell pseudotime of each lineage in the differentiation process
-#' @param maxT_CC numeric; Maximum cell pseudotime of the cell cycle process
+#' @param maxT numeric; Maximum cell pseudotime
+#' @param sort boolean; Whether to sort genes based on their peak times
 #' @param sparsity numeric; Sparsity of count matrix
 #' @param theta numeric; Dipersion parameter for negative binomial model
 #'
 #' @return
 #' Returns a gene-by-cell count matrix
 #'
-#' @export simulate.coral
+#' @export simulate_bifurcation
 #'
 #' @examples
 #'
 
-
-simulate.coral <- function(N_cells = 15*rep(100, 7),
-                           N_genes = 2*rep(100, 7),
-                           N_genes_CC = 400,
-                           model = "poisson",
-                           meanlog = 0,
-                           sdlog = 0.25,
-                           scale = 25,
-                           scale_l = 2,
-                           seed = 1,
-                           maxT = 10,
-                           maxT_CC = 20,
-                           sparsity = NULL,
-                           theta = 10){
+simulate_bifurcation <- function(N_cells = 5*c(100, 50, 50),
+                                 N_genes = 5*c(100, 50, 50),
+                                 model = "poisson",
+                                 meanlog = 0,
+                                 sdlog = 0.25,
+                                 scale = 25,
+                                 seed = 1,
+                                 maxT = 15,
+                                 sort = TRUE,
+                                 sparsity = 0.1,
+                                 theta = 10){
 
   if (!is.null(sparsity)) {
-    message(sprintf("Simulating the coral process, %s cells, %s genes, sparsity: %s, random.seed: %s, using %s model", sum(N_cells), sum(N_genes), sparsity, seed, model))
+    message(sprintf("Simulating the bifurcation process, %s cells, %s genes, sparsity: %s, random.seed: %s, using %s model", sum(N_cells), sum(N_genes), sparsity, seed, model))
   }
   if (is.null(sparsity)) {
-    message(sprintf("Simulating the coral process, %s cells, %s genes, no sparsification, random.seed: %s, using %s model", sum(N_cells), sum(N_genes), seed, model))
+    message(sprintf("Simulating the bifurcation process, %s cells, %s genes, no sparsification, random.seed: %s, using %s model", sum(N_cells), sum(N_genes), seed, model))
   }
 
   cell_pt_list <- list()
@@ -71,16 +67,6 @@ simulate.coral <- function(N_cells = 15*rep(100, 7),
   for (i in 2:Np){
     cell_pt_mat[i,(N_cells_summed[i-1]+1):N_cells_summed[i]] <- cell_pt_list[[i]]
     gene_pt_mat[i,(N_genes_summed[i-1]+1):N_genes_summed[i]] <- gene_pt_list[[i]]
-
-    if (i %in% c(4,5)){
-      cell_pt_mat[2,(N_cells_summed[i-1]+1):N_cells_summed[i]] <- maxT
-      gene_pt_mat[2,(N_genes_summed[i-1]+1):N_genes_summed[i]] <- maxT
-    }
-
-    if (i %in% c(6,7)){
-      cell_pt_mat[3,(N_cells_summed[i-1]+1):N_cells_summed[i]] <- maxT
-      gene_pt_mat[3,(N_genes_summed[i-1]+1):N_genes_summed[i]] <- maxT
-    }
   }
 
   gc_mat <- matrix(0, nrow = sum(N_genes), ncol = sum(N_cells))
@@ -121,26 +107,9 @@ simulate.coral <- function(N_cells = 15*rep(100, 7),
 
   rownames(gc_mat) <- unlist(gene_pt_list)
   colnames(gc_mat) <- unlist(cell_pt_list)
-
   gc_mat_tree <- gc_mat
 
-  gc_mat_cyclic <- simulate.cyclic(N_cells = sum(N_cells),
-                                   N_genes = N_genes_CC,
-                                   model = model,
-                                   meanlog = meanlog,
-                                   sdlog = sdlog,
-                                   scale_l = scale_l,
-                                   scale = scale,
-                                   seed = seed,
-                                   maxT = maxT_CC,
-                                   sparsity = sparsity,
-                                   theta = theta)
-
-  set.seed(10000*seed)
-  idx = sample(1:ncol(gc_mat_cyclic))
-  gc_mat_coral <- rbind(gc_mat_tree, gc_mat_cyclic[,idx])
-  colnames(gc_mat_coral) <- paste0(colnames(gc_mat_tree),"|",colnames(gc_mat_cyclic[,idx]))
-
-  gc_mat_coral
-
+  gc_mat
 }
+
+
