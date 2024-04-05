@@ -1,6 +1,6 @@
 ---
-title: "GeneTrajectory tutorial (myeloid dataset)"
-author: "Rihao Qu"
+title: "GeneTrajectory tutorial"
+author: "Rihao Qu, Francesco Strino"
 date: "03/20/2024"
 output: 
   rmarkdown::html_document:
@@ -47,7 +47,7 @@ The standard preprocessing can be done by employing the [Seurat](https://satijal
 The preprocessed Seurat object for this tutorial can be downloaded from [figshare](https://figshare.com/articles/dataset/Processed_Seurat_objects_for_GeneTrajectory_inference_Gene_Trajectory_Inference_for_Single-cell_Data_by_Optimal_Transport_Metrics_/25243225).
 
 ```{r, warning = FALSE, fig.width=7, fig.height=4.5}
-##### Import the tutorial dataset and take a preliminary visualization
+# Import the tutorial dataset and relabel the celltypes for visualization
 data_S <- readRDS("../../data/human_myeloid_seurat_obj.rds")
 cluster_relabel <- c("0" = "CD14+ monocytes",
                      "1" = "Intermediate monocytes",
@@ -57,10 +57,8 @@ data_S$celltype <- cluster_relabel[as.character(data_S$cluster)]
 DimPlot(data_S, group.by = "celltype", shuffle = T)
 ```
 
-################################################
 # Gene-gene distance computation
-################################################
-We narrow down the gene list for gene-gene distance computation by focusing on the top 500 variable genes expressed by 1% - 50% of cells. 
+In this tutorial, we demonstrate gene-gene distance computation by selecting the top 500 variable genes expressed by 1% to 50% of cells. The expected running time for this computation is approximately 1 to 3 minutes. 
 
 ## Select genes
 ```{r, warning = FALSE}
@@ -73,56 +71,60 @@ genes <- all_genes[which(expr_percent > 0.01 & expr_percent < 0.5)]
 length(genes)
 ```
 
-## Prepare the input for gene-gene Wasserstein distance computation
-Next, we construct the cell-cell kNN graph and calculate cell-cell graph distances.
+## Prepare the input for gene-gene distance computation
+Next, we compute the Diffusion Map cell embedding using `RunDM`. We then use `GetGraphDistance` to construct the cell-cell kNN graph (`K`=10 in this example) and calculate cell-cell graph distances (defined by the length of the shortest path connecting two cells in the kNN graph). To improve computation efficiency, we coarse-grain the cell graph by grouping cells into `N`=500 "meta-cells".
 ```{r, warning = FALSE, message=TRUE}
+# Compute the Diffusion Map cell embedding
 data_S <- GeneTrajectory::RunDM(data_S)
+# Calculate cell-cell graph distances over a cell-cell kNN graph
 cell.graph.dist <- GetGraphDistance(data_S, K = 10)
+# Coarse-grain the cell graph by grouping cells into `N`=500 "meta-cells"
 cg_output <- CoarseGrain(data_S, cell.graph.dist, genes, N = 500)
 ```
 
 
-################################################
-# Wasserstein distance computation in Python
-################################################
-```{r, warning = FALSE, fig.width=5, fig.height=4.5, eval = FALSE}
+# Gene-gene distance computation
+The computation of gene-gene Wasserstein distances is by employing the package of Python Optimal Transport ([POT](https://pythonot.github.io/)). Here, we recommend users to set up a virtualenv using [reticulate](https://cran.r-project.org/web/packages/reticulate/index.html) R package.
+```{r, warning = FALSE, eval = FALSE}
+# Create a virtualenv using reticulate
 if(!reticulate::virtualenv_exists('gene_trajectory')){
   reticulate::virtualenv_create('gene_trajectory', packages=c('gene_trajectory'))
 }
 reticulate::use_virtualenv('gene_trajectory')
-
+# Import the function to compute gene-gene distances
 cal_ot_mat_from_numpy <- reticulate::import('gene_trajectory.compute_gene_distance_cmd')$cal_ot_mat_from_numpy
-
+# Compute gene-gene distances (this is usually the most time-consuming step, which can take hours if the computation is done on thousands of genes over a large cell graph.)
 gene.dist.mat <- cal_ot_mat_from_numpy(ot_cost = cg_output[["graph.dist"]], gene_expr = cg_output[["gene.expression"]])
 rownames(gene.dist.mat) <- cg_output[["features"]]
 colnames(gene.dist.mat) <- cg_output[["features"]]
 dim(gene.dist.mat)
 ```
 
-################################################
 # Gene trajectory inference and visualization
-################################################
-```{r, warning = FALSE, fig.width=4.5, fig.height=4, message=FALSE, include=FALSE}
+```{r, warning = FALSE, message=FALSE, include=FALSE}
 dir.path <- "/banach1/rq25/GeneTrajectory_data/re_test/human_myeloid/N500/"
 gene.dist.mat <- LoadGeneDistMat(dir.path, file_name = "emd.csv")
 ```
 
-Next, we generate the gene embedding by employing Diffusion Map.
-
-```{r, warning = FALSE, fig.width=4.5, fig.height=4, message=FALSE}
+After we get the gene-gene distance matrix, we construct the gene embedding by employing Diffusion Map.
+```{r, warning = FALSE, message=FALSE}
 gene_embedding <- GetGeneEmbedding(gene.dist.mat, K = 5)$diffu.emb
 ```
 
-The extraction of gene trajectories is done sequentially. The initial node (terminus-1) is defined by the gene with the largest distance from the origin in the Diffusion Map embedding. A random-walk procedure is then employed on the gene graph to select the other genes that belong to the trajectory terminated at terminus-1. After retrieving genes for the first trajectory, we identify the terminus of the subsequent gene trajectory among the remaining genes and repeat the steps above. This is done iteratively until all detectable trajectories are extracted.
+The extraction of gene trajectories is done sequentially. The initial terminus node (terminus-1) is defined by the gene with the largest distance from the origin in the Diffusion Map embedding. A random-walk procedure is then employed on the gene graph to select the other genes that belong to the trajectory terminated at terminus-1. After retrieving genes for the first trajectory, we identify the terminus of the subsequent gene trajectory among the remaining genes and repeat the steps above. This is done sequentially until all detectable trajectories are extracted.
 
 - `N`: the number of trajectories to extract;
 
-- `t.list`: the time step of random walk to extract each trajectory. Increasing each `t` extracts a longer trajectory.
+- `t.list`: the time step of random walk to extract each trajectory. Increasing `t` extracts a longer trajectory.
+
+- `K`: this should be consistent with the `K` used in the previous step (`GetGeneEmbedding`).
 
 ```{r, warning = FALSE, fig.width=4.5, fig.height=4, message=FALSE}
+# Extract 3 gene trajectories
 gene_trajectory <- ExtractGeneTrajectory(gene_embedding, gene.dist.mat, N = 3, t.list = c(4,7,7), K = 5)
 table(gene_trajectory$selected)
 
+# Visualize gene trajectories
 par(mar = c(1.5,1.5,1.5,1.5))
 scatter3D(gene_embedding[,1],
           gene_embedding[,2],
@@ -131,31 +133,46 @@ scatter3D(gene_embedding[,1],
           main = "trajectory", pch = 19, cex = 1, theta = 45, phi = 0,
           col = ramp.col(c(hue_pal()(3))))
 
+# Extract the ordered list of genes along each gene trajectory
 gene_list <- list()
 for (i in 1:3){
   gene_trajectory_sub <- gene_trajectory[which(gene_trajectory$selected == paste0("Trajectory-", i)),]
   genes <- rownames(gene_trajectory_sub)[order(gene_trajectory_sub[, paste0("Pseudoorder", i)])]
-  #message(paste(genes, collapse = ", "))
   gene_list[[i]] <- genes
 }
-
 ```
 
 
 # Visualize gene bin plots
 To examine how each given gene trajectory is reflected over the cell graph, we can track how these genes are expressed across different regions in the cell embedding. Here, we would recommend users to apply [ALRA](https://github.com/KlugerLab/ALRA/blob/master/README.md) imputation to smooth the expression values for generating gene bin plots.
 ```{r, warning = FALSE, fig.width=5, fig.height=4.5, eval = FALSE}
+library(SeuratWrappers)
 data_S <- RunALRA(data_S)
 ```
+
+We define gene bin score by splitting each gene trajectory into 5 consecutive gene bins. 
+
+- `N.bin`: the number of gene bins along each gene trajectory;
+
+- `trajectories`: gene trajectories to define gene bin score;
+
+- `assay`: assay used to compute the score of each gene bin;
+
+- `reverse`: a Boolean vector that indicates whether or not to reverse the gene order along each gene trajectory.
+
 ```{r, warning = FALSE, fig.width=12, fig.height=3, message=FALSE}
 data_S <- AddGeneBinScore(data_S, gene_trajectory, N.bin = 5, trajectories = 1:3, assay = "alra", reverse = c(F, F, T))
+
+# Visualize gene bin plots for each gene trajectory
 FeaturePlot(data_S, pt.size = 0.05, features = paste0("Trajectory",1,"_genes", 1:5), ncol = 5, order = T) &
   scale_color_gradientn(colors = rev(brewer_pal(palette = "RdYlBu")(10))) & NoLegend() & NoAxes() & theme(title = element_text(size = 10))
 FeaturePlot(data_S, pt.size = 0.05, features = paste0("Trajectory",2,"_genes", 1:5), ncol = 5, order = T) &
   scale_color_gradientn(colors = rev(brewer_pal(palette = "RdYlBu")(10))) & NoLegend() & NoAxes() & theme(title = element_text(size = 10))
 FeaturePlot(data_S, pt.size = 0.05, features = paste0("Trajectory",3,"_genes", 1:5), ncol = 5, order = T) &
   scale_color_gradientn(colors = rev(brewer_pal(palette = "RdYlBu")(10))) & NoLegend() & NoAxes() & theme(title = element_text(size = 10))
-
 ```
 
-
+# Session information
+```{r, warning = FALSE}
+sessionInfo()
+```
