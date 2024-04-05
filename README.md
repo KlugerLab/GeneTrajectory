@@ -16,7 +16,7 @@ GeneTrajectory can be installed in R as follows:
 install.packages("devtools")
 devtools::install_github("KlugerLab/GeneTrajectory")
 ```
-A Python implementation is available in [https://github.com/KlugerLab/GeneTrajectory-python](https://github.com/KlugerLab/GeneTrajectory-python).
+A Python implementation is available at [https://github.com/KlugerLab/GeneTrajectory-python](https://github.com/KlugerLab/GeneTrajectory-python).
 
 ## Example tutorial
 Please check GeneTrajectory [tutorial](https://klugerlab.github.io/GeneTrajectory/articles/GeneTrajectory.html).
