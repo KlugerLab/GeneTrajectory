@@ -1,5 +1,5 @@
 ---
-title: "GeneTrajectory tutorial"
+title: "GeneTrajectory Tutorial"
 author: "Rihao Qu, Francesco Strino"
 date: "03/20/2024"
 output: 
@@ -13,7 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 #knitr::opts_chunk$set(fig.width=5, fig.height=4.5) 
 ```
 
-# Gene Trajectory Inference
+# Overview
 
 GeneTrajectory is a method for inferring gene trajectories in scRNA-seq data, which facilitates understanding of gene dynamics underlying biological processes. The major workflow of GeneTrajectory comprises the following four main steps:
 
@@ -83,7 +83,7 @@ cg_output <- CoarseGrain(data_S, cell.graph.dist, genes, N = 500)
 ```
 
 
-# Gene-gene distance computation
+## Compute gene-gene distances
 The computation of gene-gene Wasserstein distances is by employing the package of Python Optimal Transport ([POT](https://pythonot.github.io/)). Here, we recommend users to set up a virtualenv using [reticulate](https://cran.r-project.org/web/packages/reticulate/index.html) R package.
 ```{r, warning = FALSE, eval = FALSE}
 # Create a virtualenv using reticulate
