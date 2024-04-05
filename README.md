@@ -10,7 +10,7 @@ GeneTrajectory is a method for inferring gene trajectories in scRNA-seq data, wh
 
 ## Install
 
-GeneTrajectory can be installed as follows:
+GeneTrajectory can be installed in R as follows:
 
 ```r
 install.packages("devtools")
