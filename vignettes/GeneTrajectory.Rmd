@@ -73,7 +73,7 @@ length(genes)
 
 ## Prepare the input for gene-gene distance computation
 Next, we compute the Diffusion Map cell embedding using `RunDM`. We then use `GetGraphDistance` to construct the cell-cell kNN graph (`K`=10 in this example) and calculate cell-cell graph distances (defined by the length of the shortest path connecting two cells in the kNN graph). To improve computation efficiency, we coarse-grain the cell graph by grouping cells into `N`=500 "meta-cells".
-```{r, warning = FALSE, message=TRUE}
+```{r, warning = FALSE, message=FALSE}
 # Compute the Diffusion Map cell embedding
 data_S <- GeneTrajectory::RunDM(data_S)
 # Calculate cell-cell graph distances over a cell-cell kNN graph
@@ -93,12 +93,13 @@ if(!reticulate::virtualenv_exists('gene_trajectory')){
 reticulate::use_virtualenv('gene_trajectory')
 # Import the function to compute gene-gene distances
 cal_ot_mat_from_numpy <- reticulate::import('gene_trajectory.compute_gene_distance_cmd')$cal_ot_mat_from_numpy
-# Compute gene-gene distances (this is usually the most time-consuming step, which can take hours if the computation is done on thousands of genes over a large cell graph.)
+# Compute gene-gene distances 
 gene.dist.mat <- cal_ot_mat_from_numpy(ot_cost = cg_output[["graph.dist"]], gene_expr = cg_output[["gene.expression"]], num_iter_max = 50000, show_progress_bar = TRUE)
 rownames(gene.dist.mat) <- cg_output[["features"]]
 colnames(gene.dist.mat) <- cg_output[["features"]]
 dim(gene.dist.mat)
 ```
+Computing gene-gene distances is usually the most time-consuming step. When dealing with thousands of genes over a large cell graph, this process can take hours. Check the [strategies](https://klugerlab.github.io/GeneTrajectory/articles/fast_computation.html) on how to improve the efficiency of computation.
 
 # Gene trajectory inference and visualization
 ```{r, warning = FALSE, message=FALSE, include=FALSE}

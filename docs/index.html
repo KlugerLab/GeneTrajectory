@@ -78,7 +78,7 @@
 </h1></div>
 <p>GeneTrajectory is a method for inferring gene trajectories in scRNA-seq data, which facilitates understanding of gene dynamics underlying biological processes. The major workflow of GeneTrajectory comprises the following four main steps: * Step 1. Build a cell-cell kNN graph in which each cell is connected to its k-nearest neighbors. Find the shortest path connecting each pair of cells in the graph and denote its length as the graph distance between cells. * Step 2. Compute pairwise graph-based Wasserstein distance between gene distributions, which quantifies the minimum cost of transporting the distribution of a given gene into the distribution of another gene in the cell graph. * Step 3. Generate a low-dimensional representation of genes (using Diffusion Map by default) based on the gene-gene Wasserstein distance matrix. Identify gene trajectories in a sequential manner. * Step 4. Determine the order of genes along each gene trajectory.</p>
 <div class="float">
-<img src="https://github.com/RihaoQu/IGT/blob/master/images/GT_workflow.png" alt="Workflow"><div class="figcaption">Workflow</div>
+<img src="./articles/GT_workflow.png" alt="Workflow"><div class="figcaption">Workflow</div>
 </div>
 <div class="section level2">
 <h2 id="install">Install<a class="anchor" aria-label="anchor" href="#install"></a>

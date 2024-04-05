@@ -62,7 +62,7 @@ cal_ot_mat_from_numpy <- reticulate::import('gene_trajectory.compute_gene_distan
 
 # Strategy-1: cell graph coarse-graining
 To improve computation efficiency, we coarse-grain the cell graph by grouping cells into `N` "meta-cells".
-```{r, warning = FALSE, message=TRUE}
+```{r, warning = FALSE, message=FALSE, eval=FALSE}
 # Example: coarse-grain the cell graph by grouping cells into `N`=500 "meta-cells"
 cg_output1 <- CoarseGrain(data_S, cell.graph.dist, genes, N = 500)
 gene.dist.mat1 <- cal_ot_mat_from_numpy(ot_cost = cg_output1[["graph.dist"]], gene_expr = cg_output1[["gene.expression"]])
@@ -80,7 +80,7 @@ Specifically, this is formulated in the following way: if we want to construct t
 
 Below shows an example of computing gene-gene distances over the original cell graph, utilizing the precomputed gene-gene distance matrix on `N` = 500. Here, we choose $α=5$, $K=5$.
 
-```{r, warning = FALSE, message=TRUE}
+```{r, warning = FALSE, message=TRUE, eval=FALSE}
 alpha = 5
 K = 5
 knn.index <- get.knn(gene.dist.mat1, k=alpha*K)$nn.index 
@@ -90,6 +90,15 @@ gene.pairs <- gene.pairs[which(gene.pairs[,1] < gene.pairs[,2]),]
 gene.dist.mat3 <- cal_ot_mat_from_numpy(ot_cost = cell.graph.dist, gene_expr = t(as.matrix(data_S[[assay]]@data[genes,])), gene_pairs = gene.pairs-1L) # Here, using -1L is to match the indexing criterion in Python.
 ```
 
+# Comparing gene embeddings 
+
+```{r, warning = FALSE, message=FALSE, include=FALSE}
+dir.path <- "/banach1/rq25/GeneTrajectory_data/re_test/human_myeloid/fast_computation/"
+setwd(dir.path)
+gene.dist.mat1 <- readRDS("gene.dist.mat1.rds")
+gene.dist.mat2 <- readRDS("gene.dist.mat2.rds")
+gene.dist.mat3 <- readRDS("gene.dist.mat3.rds")
+```
 
 
 ```{r, warning = FALSE, message=FALSE}
